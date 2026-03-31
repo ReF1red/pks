@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "NetworkConnectionsAnalyzer/1.0.0": {
+        "runtime": {
+          "NetworkConnectionsAnalyzer.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "NetworkConnectionsAnalyzer/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
