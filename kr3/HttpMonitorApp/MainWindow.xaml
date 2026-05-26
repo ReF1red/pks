@@ -1,0 +1,248 @@
+<Window x:Class="HttpMonitorApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Мониторинг HTTP-запросов"
+        Height="820"
+        Width="1280"
+        MinHeight="700"
+        MinWidth="1080">
+
+    <Grid Margin="10">
+        <TabControl>
+            <TabItem Header="Сервер">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="Порт:" VerticalAlignment="Center"/>
+                        <TextBox Width="90"
+                                 Margin="8,0,0,0"
+                                 Text="{Binding PortText, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Content="Запустить сервер"
+                                Margin="10,0,0,0"
+                                Width="140"
+                                Click="StartServerButton_Click"/>
+                        <Button Content="Остановить сервер"
+                                Margin="8,0,0,0"
+                                Width="140"
+                                Click="StopServerButton_Click"/>
+                        <TextBlock Text="{Binding ServerStateText}"
+                                   Margin="15,0,0,0"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.3*"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <GroupBox Header="Логи сервера" Margin="0,0,10,0">
+                            <TextBox Text="{Binding ServerLogsText}"
+                                     IsReadOnly="True"
+                                     TextWrapping="Wrap"
+                                     VerticalScrollBarVisibility="Auto"
+                                     HorizontalScrollBarVisibility="Auto"/>
+                        </GroupBox>
+
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="2*"/>
+                            </Grid.RowDefinitions>
+
+                            <GroupBox Header="Краткая статистика">
+                                <Grid Margin="8">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Text="Всего запросов:"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding TotalRequests}"/>
+                                    <TextBlock Grid.Row="1" Text="GET:"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding GetRequests}"/>
+                                    <TextBlock Grid.Row="2" Text="POST:"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding PostRequests}"/>
+                                    <TextBlock Grid.Row="3" Text="Среднее время (мс):"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding AverageProcessingMs}"/>
+                                </Grid>
+                            </GroupBox>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10,0,5">
+                                <TextBlock Text="Период графика:" VerticalAlignment="Center"/>
+                                <ComboBox Width="130"
+                                          Margin="8,0,0,0"
+                                          SelectedValuePath="Tag"
+                                          SelectionChanged="BucketModeCombo_SelectionChanged">
+                                    <ComboBoxItem Content="По минутам" Tag="minute" IsSelected="True"/>
+                                    <ComboBoxItem Content="По часам" Tag="hour"/>
+                                </ComboBox>
+                            </StackPanel>
+
+                            <GroupBox Grid.Row="3" Header="Нагрузка (график и таблица)">
+                                <Grid Margin="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="1.4*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                        <ItemsControl ItemsSource="{Binding CurrentBuckets}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Grid Margin="0,2,0,2">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="90"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="40"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
+                                                        <ProgressBar Grid.Column="1"
+                                                                     Margin="6,0,6,0"
+                                                                     Height="16"
+                                                                     Minimum="0"
+                                                                     Maximum="{Binding DataContext.MaxBucketValue, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                     Value="{Binding Count}"/>
+                                                        <TextBlock Grid.Column="2" Text="{Binding Count}" VerticalAlignment="Center"/>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+
+                                    <DataGrid Grid.Row="1"
+                                              Margin="0,8,0,0"
+                                              IsReadOnly="True"
+                                              AutoGenerateColumns="False"
+                                              ItemsSource="{Binding CurrentBuckets}">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Период" Binding="{Binding Label}" Width="*"/>
+                                            <DataGridTextColumn Header="Количество" Binding="{Binding Count}" Width="120"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Клиент">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="1.2*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="URL:" VerticalAlignment="Center"/>
+                        <TextBox Width="750"
+                                 Margin="8,0,0,0"
+                                 Text="{Binding ClientUrl, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10,0,10">
+                        <TextBlock Text="Метод:" VerticalAlignment="Center"/>
+                        <ComboBox Width="120"
+                                  Margin="8,0,0,0"
+                                  SelectedValuePath="Content"
+                                  SelectedValue="{Binding ClientMethod}">
+                            <ComboBoxItem Content="GET"/>
+                            <ComboBoxItem Content="POST" IsSelected="True"/>
+                        </ComboBox>
+                        <Button Content="Отправить запрос"
+                                Margin="10,0,0,0"
+                                Width="150"
+                                Click="SendRequestButton_Click"/>
+                    </StackPanel>
+
+                    <GroupBox Grid.Row="2" Header="Тело запроса (JSON)">
+                        <TextBox Text="{Binding ClientRequestBody}"
+                                 AcceptsReturn="True"
+                                 VerticalScrollBarVisibility="Auto"
+                                 HorizontalScrollBarVisibility="Auto"/>
+                    </GroupBox>
+
+                    <TextBlock Grid.Row="3"
+                               Margin="0,10,0,5"
+                               Text="Ответ:"
+                               FontWeight="SemiBold"/>
+
+                    <TextBox Grid.Row="4"
+                             Text="{Binding ClientResponseText}"
+                             IsReadOnly="True"
+                             TextWrapping="Wrap"
+                             VerticalScrollBarVisibility="Auto"
+                             HorizontalScrollBarVisibility="Auto"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Логи и фильтры">
+                <Grid Margin="10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                        <TextBlock Text="Фильтр метода:" VerticalAlignment="Center"/>
+                        <ComboBox Width="130"
+                                  Margin="8,0,0,0"
+                                  SelectedValuePath="Tag"
+                                  SelectionChanged="MethodFilterCombo_SelectionChanged">
+                            <ComboBoxItem Content="Все" Tag="ALL" IsSelected="True"/>
+                            <ComboBoxItem Content="GET" Tag="GET"/>
+                            <ComboBoxItem Content="POST" Tag="POST"/>
+                        </ComboBox>
+
+                        <TextBlock Text="Фильтр статуса:" Margin="20,0,0,0" VerticalAlignment="Center"/>
+                        <ComboBox Width="130"
+                                  Margin="8,0,0,0"
+                                  SelectedValuePath="Tag"
+                                  SelectionChanged="StatusFilterCombo_SelectionChanged">
+                            <ComboBoxItem Content="Все" Tag="ALL" IsSelected="True"/>
+                            <ComboBoxItem Content="2xx" Tag="2xx"/>
+                            <ComboBoxItem Content="4xx" Tag="4xx"/>
+                            <ComboBoxItem Content="5xx" Tag="5xx"/>
+                        </ComboBox>
+                    </StackPanel>
+
+                    <DataGrid Grid.Row="1"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              ItemsSource="{Binding VisibleLogs}">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Время" Binding="{Binding Timestamp}" Width="170"/>
+                            <DataGridTextColumn Header="Направление" Binding="{Binding Direction}" Width="120"/>
+                            <DataGridTextColumn Header="Метод" Binding="{Binding Method}" Width="80"/>
+                            <DataGridTextColumn Header="URL" Binding="{Binding Url}" Width="270"/>
+                            <DataGridTextColumn Header="Статус" Binding="{Binding StatusCode}" Width="80"/>
+                            <DataGridTextColumn Header="Время, мс" Binding="{Binding DurationMs}" Width="90"/>
+                            <DataGridTextColumn Header="Тело запроса" Binding="{Binding RequestBodyPreview}" Width="220"/>
+                            <DataGridTextColumn Header="Тело ответа" Binding="{Binding ResponseBodyPreview}" Width="220"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
