@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace HttpMonitorApp;
 
@@ -53,7 +55,7 @@ public partial class MainWindow : Window, INotifyPropertyChanged
     {
         InitializeComponent();
         DataContext = this;
-        _logFilePath = Path.Combine(AppContext.BaseDirectory, "logs.txt");
+        _logFilePath = System.IO.Path.Combine(AppContext.BaseDirectory, "logs.txt");
         Closing += MainWindow_Closing;
     }
 
@@ -603,6 +605,131 @@ public partial class MainWindow : Window, INotifyPropertyChanged
         }
 
         MaxBucketValue = Math.Max(1, prepared.Count == 0 ? 1 : prepared.Max(x => x.Count));
+        DrawLoadChart();
+    }
+
+    private void LoadChartCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        DrawLoadChart();
+    }
+
+    private void DrawLoadChart()
+    {
+        var canvas = LoadChartCanvas;
+        if (canvas is null)
+        {
+            return;
+        }
+
+        canvas.Children.Clear();
+
+        var width = canvas.ActualWidth;
+        var height = canvas.ActualHeight;
+        if (width < 20 || height < 20)
+        {
+            return;
+        }
+
+        const double leftMargin = 38;
+        const double rightMargin = 12;
+        const double topMargin = 12;
+        const double bottomMargin = 30;
+
+        var plotWidth = width - leftMargin - rightMargin;
+        var plotHeight = height - topMargin - bottomMargin;
+        if (plotWidth <= 0 || plotHeight <= 0)
+        {
+            return;
+        }
+
+        var buckets = CurrentBuckets.ToList();
+        var maxValue = Math.Max(1, buckets.Count == 0 ? 1 : buckets.Max(b => b.Count));
+
+        var axisBrush = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88));
+        var gridBrush = new SolidColorBrush(Color.FromRgb(0xE3, 0xE3, 0xE3));
+        var barBrush = new SolidColorBrush(Color.FromRgb(0x42, 0x85, 0xF4));
+        var peakBrush = new SolidColorBrush(Color.FromRgb(0xE5, 0x3E, 0x3E));
+
+        var axisBottom = topMargin + plotHeight;
+
+        // Оси
+        canvas.Children.Add(new Line { X1 = leftMargin, Y1 = topMargin, X2 = leftMargin, Y2 = axisBottom, Stroke = axisBrush, StrokeThickness = 1 });
+        canvas.Children.Add(new Line { X1 = leftMargin, Y1 = axisBottom, X2 = leftMargin + plotWidth, Y2 = axisBottom, Stroke = axisBrush, StrokeThickness = 1 });
+
+        // Горизонтальная сетка и подписи оси Y
+        const int yTicks = 4;
+        for (var i = 0; i <= yTicks; i++)
+        {
+            var value = maxValue * i / (double)yTicks;
+            var y = axisBottom - plotHeight * i / yTicks;
+
+            if (i > 0)
+            {
+                canvas.Children.Add(new Line { X1 = leftMargin, Y1 = y, X2 = leftMargin + plotWidth, Y2 = y, Stroke = gridBrush, StrokeThickness = 1 });
+            }
+
+            var yLabel = new TextBlock { Text = Math.Round(value).ToString(), FontSize = 10, Foreground = axisBrush };
+            Canvas.SetLeft(yLabel, 4);
+            Canvas.SetTop(yLabel, y - 8);
+            canvas.Children.Add(yLabel);
+        }
+
+        if (buckets.Count == 0)
+        {
+            var empty = new TextBlock { Text = "Нет данных о нагрузке", FontSize = 12, Foreground = axisBrush };
+            Canvas.SetLeft(empty, leftMargin + plotWidth / 2 - 60);
+            Canvas.SetTop(empty, topMargin + plotHeight / 2 - 8);
+            canvas.Children.Add(empty);
+            return;
+        }
+
+        var slot = plotWidth / buckets.Count;
+        var barWidth = Math.Max(2, slot * 0.6);
+        var labelStep = Math.Max(1, (int)Math.Ceiling(buckets.Count / (plotWidth / 55.0)));
+
+        for (var i = 0; i < buckets.Count; i++)
+        {
+            var bucket = buckets[i];
+            var barHeight = plotHeight * bucket.Count / maxValue;
+            var x = leftMargin + slot * i + (slot - barWidth) / 2;
+            var y = axisBottom - barHeight;
+
+            var rect = new Rectangle
+            {
+                Width = barWidth,
+                Height = Math.Max(0, barHeight),
+                Fill = bucket.Count == maxValue ? peakBrush : barBrush,
+                ToolTip = $"{bucket.Label}: {bucket.Count}"
+            };
+            Canvas.SetLeft(rect, x);
+            Canvas.SetTop(rect, y);
+            canvas.Children.Add(rect);
+
+            // Значение над пиковым столбцом
+            if (bucket.Count == maxValue && bucket.Count > 0)
+            {
+                var valueLabel = new TextBlock { Text = bucket.Count.ToString(), FontSize = 9, Foreground = peakBrush };
+                Canvas.SetLeft(valueLabel, x);
+                Canvas.SetTop(valueLabel, Math.Max(topMargin, y - 13));
+                canvas.Children.Add(valueLabel);
+            }
+
+            // Подписи оси X (с прореживанием)
+            if (i % labelStep == 0)
+            {
+                var xLabel = new TextBlock
+                {
+                    Text = bucket.Label,
+                    FontSize = 9,
+                    Foreground = axisBrush,
+                    RenderTransform = new RotateTransform(35),
+                    RenderTransformOrigin = new Point(0, 0)
+                };
+                Canvas.SetLeft(xLabel, leftMargin + slot * i + slot / 2);
+                Canvas.SetTop(xLabel, axisBottom + 4);
+                canvas.Children.Add(xLabel);
+            }
+        }
     }
 
     private static void IncrementBucket(IDictionary<DateTime, int> map, DateTime key, int maxItems)

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Mac\\Home\\Documents\\pks\\HttpMonitorApp\\HttpMonitorApp.csproj": {}
+    "\\\\Mac\\Home\\Downloads\\pks-main\\kr3\\HttpMonitorApp\\HttpMonitorApp.csproj": {}
   },
   "projects": {
-    "C:\\Mac\\Home\\Documents\\pks\\HttpMonitorApp\\HttpMonitorApp.csproj": {
+    "\\\\Mac\\Home\\Downloads\\pks-main\\kr3\\HttpMonitorApp\\HttpMonitorApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Mac\\Home\\Documents\\pks\\HttpMonitorApp\\HttpMonitorApp.csproj",
+        "projectUniqueName": "\\\\Mac\\Home\\Downloads\\pks-main\\kr3\\HttpMonitorApp\\HttpMonitorApp.csproj",
         "projectName": "HttpMonitorApp",
-        "projectPath": "C:\\Mac\\Home\\Documents\\pks\\HttpMonitorApp\\HttpMonitorApp.csproj",
+        "projectPath": "\\\\Mac\\Home\\Downloads\\pks-main\\kr3\\HttpMonitorApp\\HttpMonitorApp.csproj",
         "packagesPath": "C:\\Users\\nikita\\.nuget\\packages\\",
-        "outputPath": "C:\\Mac\\Home\\Documents\\pks\\HttpMonitorApp\\obj\\",
+        "outputPath": "\\\\Mac\\Home\\Downloads\\pks-main\\kr3\\HttpMonitorApp\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\nikita\\AppData\\Roaming\\NuGet\\NuGet.Config",

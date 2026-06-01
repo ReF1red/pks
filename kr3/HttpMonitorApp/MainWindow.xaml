@@ -101,30 +101,15 @@
                                         <RowDefinition Height="*"/>
                                     </Grid.RowDefinitions>
 
-                                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                        <ItemsControl ItemsSource="{Binding CurrentBuckets}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Grid Margin="0,2,0,2">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="90"/>
-                                                            <ColumnDefinition Width="*"/>
-                                                            <ColumnDefinition Width="40"/>
-                                                        </Grid.ColumnDefinitions>
-
-                                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center"/>
-                                                        <ProgressBar Grid.Column="1"
-                                                                     Margin="6,0,6,0"
-                                                                     Height="16"
-                                                                     Minimum="0"
-                                                                     Maximum="{Binding DataContext.MaxBucketValue, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                     Value="{Binding Count}"/>
-                                                        <TextBlock Grid.Column="2" Text="{Binding Count}" VerticalAlignment="Center"/>
-                                                    </Grid>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </ScrollViewer>
+                                    <Border BorderBrush="#FFCCCCCC"
+                                            BorderThickness="1"
+                                            Background="White"
+                                            MinHeight="160">
+                                        <Canvas x:Name="LoadChartCanvas"
+                                                ClipToBounds="True"
+                                                Background="Transparent"
+                                                SizeChanged="LoadChartCanvas_SizeChanged"/>
+                                    </Border>
 
                                     <DataGrid Grid.Row="1"
                                               Margin="0,8,0,0"
